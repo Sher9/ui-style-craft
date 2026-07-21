@@ -1,0 +1,62 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ui-style-craft design tokens",
+  "type": "object",
+  "required": ["meta", "color", "font", "space", "radius", "shadow", "motion"],
+  "properties": {
+    "meta": {
+      "type": "object",
+      "required": ["accent", "mode", "density", "ratio"],
+      "properties": {
+        "accent": { "type": "string" },
+        "mode": { "enum": ["light", "dark"] },
+        "density": { "enum": ["compact", "normal", "comfortable"] },
+        "ratio": { "type": "number" },
+        "version": { "type": "string" },
+        "generator": { "type": "string" }
+      }
+    },
+    "color": {
+      "type": "object",
+      "required": ["neutral", "semantic"],
+      "properties": {
+        "neutral": { "type": "object" },
+        "semantic": {
+          "type": "object",
+          "required": ["bg", "surface", "border", "text-primary", "primary", "primary-fg"],
+          "properties": {
+            "bg": { "type": "string" },
+            "surface": { "type": "string" },
+            "surface-2": { "type": "string" },
+            "border": { "type": "string" },
+            "text-primary": { "type": "string" },
+            "text-secondary": { "type": "string" },
+            "text-muted": { "type": "string" },
+            "primary": { "type": "string" },
+            "primary-fg": { "type": "string" },
+            "success": { "type": "string" },
+            "warning": { "type": "string" },
+            "danger": { "type": "string" },
+            "info": { "type": "string" }
+          }
+        }
+      }
+    },
+    "font": {
+      "type": "object",
+      "required": ["family", "size", "weight", "lineHeight", "letterSpacing"],
+      "properties": {
+        "family": { "type": "object", "required": ["sans", "mono"] },
+        "size": { "type": "object" },
+        "weight": { "type": "object" },
+        "lineHeight": { "type": "object" },
+        "letterSpacing": { "type": "object" }
+      }
+    },
+    "space": { "type": "object" },
+    "spaceAlias": { "type": "object" },
+    "radius": { "type": "object" },
+    "shadow": { "type": "object" },
+    "motion": { "type": "object", "required": ["duration", "easing"] }
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "name": "ui-style-craft",
+  "version": "1.0.0",
+  "description": "CodeBuddy UI 视觉质量增强技能：design token 生成 / WCAG 对比度校验 / 反模式体检（纯 Node.js，零依赖）。",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "tokens": "node scripts/generate-tokens.mjs",
+    "contrast": "node scripts/validate-contrast.mjs",
+    "audit": "node scripts/audit-styles.mjs"
+  }
+}
