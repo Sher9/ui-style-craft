@@ -36,7 +36,7 @@ agent_created: true
 3. 新建场景：
    - Web：运行 `node scripts/generate-tokens.mjs --preset <风格> --accent <色> --mode <light|dark>` 产出 token，落地到项目（JSON 为规范源，导出 CSS/TS）。
    - **小程序**：运行 `node scripts/generate-tokens.mjs --platform wechat --preset <风格> --accent <色> --out wxss,json --dir <项目styles>` 产出 `rpx` 单位 token（`tokens.wxss` 在 `app.wxss` 用 `@import` 引入）。
-   - **从 `templates/` 选取最贴近的页面骨架**（web：hero-split / features-asymmetric / stats-band / pricing / settings-form / dashboard / web-tech / web-glass；移动端：mobile-web.html；小程序：miniprogram/ 及 miniprogram-macaron / miniprogram-guochao），基于它改，而不是凭空构图。
+   - **从 `templates/` 选取最贴近的页面骨架**（web：hero-split / features-asymmetric / stats-band / pricing / settings-form / dashboard / web-tech / web-glass / **login-split**；移动端：mobile-web.html / **login-mobile**；登录：login-split / login-mobile / login-glass / login-dark；小程序：miniprogram/ 及 miniprogram-macaron / miniprogram-guochao），基于它改，而不是凭空构图。
 4. 据 token + 规范 + 模板写 / 改 UI 代码（间距、字阶、圆角、语义色全部走变量）。
 5. 应用 `references/polish.md` 与 `references/styles.md` 的签名技法（玻璃面 / 辉光 / 渐变文字 / 衬线标题）提升质感——风格专属技法按预设放开，勿当作反模式"修复"掉。
 6. 运行 `audit-styles.mjs --style <风格>` 自检（传预设名可放宽辉光 / 高饱和 / 渐变相关检查），修复反模式与离标值（error 必须清零）。
@@ -104,6 +104,7 @@ node scripts/audit-styles.mjs --src "./src/**/*.{css,scss,tsx,jsx,vue}" --tokens
 - `templates/` — **可直接抄改的页面骨架**：
   - **Web**：`hero-split.html`（非对称分屏首屏）、`features-asymmetric.html`（之字特性区）、`stats-band.html`（数据带）、`pricing.html`（定价）、`settings-form.html`（设置表单）、`dashboard.html`（后台仪表盘）、`web-tech.html`（科技风暗色）、`web-glass.html`（玻璃拟态）。
   - **移动端 web**：`mobile-web.html`（吸顶导航 + 列表行 + 底部 Tab + 安全区 + 浮动按钮）。
+  - **登录页**：`login-split.html`（浅色分屏，**默认 / 推荐**，响应式到移动端）、`login-mobile.html`（移动端单列、触控友好、安全区）、`login-glass.html`（玻璃拟态）、`login-dark.html`（暗色）。四套共用 token 与组件逻辑，详见 `references/login.md`。
   - **小程序**：`miniprogram/`（极简卡片，WXML + WXSS，rpx + 安全区 + hover-class）、`miniprogram-macaron/`（马卡龙暖底 + 粉彩）、`miniprogram-guochao/`（国潮宣纸底 + 衬线 + 朱砂点缀）。
   - 使用：复制最接近的一页 → Web 用你产出的 `tokens.css` 替换 `_tokens.css`；小程序用 `tokens.wxss` 并在 `app.wxss` `@import`。
 - `assets/default-tokens.json` — 一套中性浅色默认 token（`--preset default` 的产出样本）。

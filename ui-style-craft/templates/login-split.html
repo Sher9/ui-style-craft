@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>登录 · Northwind</title>
+
+  <!-- 字体真正加载：Geist 置于 CJK 之前，中文自然回退 PingFang/系统 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="_tokens.css" />
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    * { margin: 0; box-sizing: border-box; }
+    body {
+      font-family: "Geist", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+      background: var(--color-bg);
+      color: var(--color-text-primary);
+      line-height: var(--line-height-normal);
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+    }
+
+    /* 非对称分屏：左品牌面板较窄、右表单较宽，避免居中 Hero */
+    .auth { display: grid; grid-template-columns: 0.92fr 1.08fr; min-height: 100vh; }
+
+    /* ---------- 左侧品牌面板（暗色、着色辉光、有纹理，非纯黑非霓虹）---------- */
+    .brand-panel {
+      position: relative; overflow: hidden;
+      display: flex; flex-direction: column; justify-content: space-between;
+      padding: var(--space-12);
+      background:
+        radial-gradient(58% 50% at 82% 0%, rgba(37, 99, 235, 0.34), transparent 62%),
+        radial-gradient(52% 48% at 8% 100%, rgba(37, 99, 235, 0.16), transparent 60%),
+        linear-gradient(158deg, #1e2638 0%, #1b2233 100%);
+      color: var(--color-neutral-100);
+    }
+    /* 细噪点纹理：消除大色块塑料感（来自 references/polish.md） */
+    .brand-panel::after {
+      content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0.05;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+    .brand-panel > * { position: relative; z-index: 1; }
+
+    .brand { display: flex; align-items: center; gap: var(--space-3); }
+    .brand .mark {
+      width: 40px; height: 40px; border-radius: var(--radius-md);
+      display: grid; place-items: center; color: var(--color-primary-fg);
+      background: linear-gradient(155deg, #3b82f6, var(--color-primary));
+      box-shadow: 0 6px 16px -6px rgba(37, 99, 235, 0.7);
+    }
+    .brand .name { font-size: var(--font-size-lg); font-weight: var(--font-weight-semibold); letter-spacing: var(--letter-spacing-tighter); }
+
+    .brand-copy { max-width: 30ch; }
+    .brand-copy h1 {
+      font-size: var(--font-size-5xl); font-weight: var(--font-weight-semibold);
+      line-height: var(--line-height-tight); letter-spacing: var(--letter-spacing-tighter);
+    }
+    .brand-copy p { margin-top: var(--space-4); color: var(--color-neutral-300); font-size: var(--font-size-base); }
+
+    .perks { display: grid; gap: var(--space-4); margin-top: var(--space-10); }
+    .perk { display: flex; align-items: center; gap: var(--space-3); color: var(--color-neutral-200); font-size: var(--font-size-sm); }
+    .perk .tick {
+      width: 28px; height: 28px; flex-shrink: 0; border-radius: var(--radius-full);
+      display: grid; place-items: center; color: #cfe0ff;
+      background: rgba(37, 99, 235, 0.22); border: 1px solid rgba(37, 99, 235, 0.35);
+    }
+
+    .quote { margin-top: var(--space-10); padding-top: var(--space-6); border-top: 1px solid rgba(255, 255, 255, 0.12); }
+    .quote p { color: var(--color-neutral-200); font-size: var(--font-size-sm); font-style: italic; }
+    .quote .who { margin-top: var(--space-3); color: var(--color-neutral-400); font-size: var(--font-size-xs); }
+
+    /* ---------- 右侧表单面板 ---------- */
+    .form-panel {
+      display: flex; align-items: center; justify-content: center;
+      padding: var(--space-12); background: var(--color-surface);
+    }
+    .form-card { width: 100%; max-width: 400px; }
+
+    /* 移动端折叠时显示的紧凑品牌行（桌面隐藏） */
+    .form-brand { display: none; align-items: center; gap: var(--space-2); margin-bottom: var(--space-8); }
+    .form-brand .mark {
+      width: 32px; height: 32px; border-radius: var(--radius-md); display: grid; place-items: center;
+      color: var(--color-primary-fg); background: linear-gradient(155deg, #3b82f6, var(--color-primary));
+    }
+
+    .form-card h2 {
+      font-size: var(--font-size-3xl); font-weight: var(--font-weight-semibold);
+      letter-spacing: var(--letter-spacing-tighter);
+    }
+    .form-card .lead { margin-top: var(--space-2); color: var(--color-text-secondary); font-size: var(--font-size-sm); }
+
+    /* 社交登录（次级描边按钮，图标用品牌色/中性色，非高饱和平涂） */
+    .social { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); margin-top: var(--space-6); }
+    .btn-social {
+      display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2);
+      height: 44px; padding-inline: var(--space-4); cursor: pointer;
+      font: inherit; font-size: var(--font-size-sm); font-weight: var(--font-weight-medium);
+      color: var(--color-text-primary); background: var(--color-surface);
+      border: 1px solid var(--color-border); border-radius: var(--radius-md);
+      transition: background var(--duration-fast) var(--easing-standard), border-color var(--duration-fast) var(--easing-standard), transform var(--duration-fast) var(--easing-standard);
+    }
+    .btn-social:hover { background: var(--color-surface-2); border-color: var(--color-neutral-300); }
+    .btn-social:active { transform: translateY(1px); }
+    .btn-social svg { width: 18px; height: 18px; flex-shrink: 0; }
+
+    /* 分隔线 */
+    .divider { display: flex; align-items: center; gap: var(--space-3); margin: var(--space-6) 0; color: var(--color-text-muted); font-size: var(--font-size-xs); }
+    .divider::before, .divider::after { content: ""; height: 1px; flex: 1; background: var(--color-border); }
+
+    /* 字段 */
+    .field { margin-bottom: var(--space-4); }
+    .field label { display: block; font-size: var(--font-size-sm); font-weight: var(--font-weight-medium); margin-bottom: var(--space-2); }
+    .control { position: relative; }
+    .control .lead-icon {
+      position: absolute; left: var(--space-3); top: 50%; transform: translateY(-50%);
+      color: var(--color-text-muted); pointer-events: none;
+    }
+    .control input {
+      width: 100%; height: 44px; padding-inline: var(--space-10) var(--space-3);
+      font: inherit; font-size: var(--font-size-sm); color: var(--color-text-primary);
+      background: var(--color-surface); border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      transition: border-color var(--duration-fast) var(--easing-standard), box-shadow var(--duration-fast) var(--easing-standard);
+    }
+    .control input::placeholder { color: var(--color-neutral-400); }
+    .control input:focus {
+      outline: none; border-color: var(--color-primary);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 22%, transparent);
+    }
+    .control .toggle {
+      position: absolute; right: var(--space-2); top: 50%; transform: translateY(-50%);
+      width: 32px; height: 32px; display: grid; place-items: center; cursor: pointer;
+      color: var(--color-text-muted); background: transparent; border: none; border-radius: var(--radius-sm);
+      transition: color var(--duration-fast) var(--easing-standard), background var(--duration-fast) var(--easing-standard);
+    }
+    .control .toggle:hover { color: var(--color-text-secondary); background: var(--color-surface-2); }
+
+    .field.error input { border-color: var(--color-danger); box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-danger) 16%, transparent); }
+    .field .msg { display: none; align-items: center; gap: var(--space-1); margin-top: var(--space-2); color: var(--color-danger); font-size: var(--font-size-xs); }
+    .field.error .msg { display: flex; }
+
+    /* 记住我 / 忘记密码 */
+    .row-between { display: flex; align-items: center; justify-content: space-between; margin: var(--space-4) 0 var(--space-6); }
+    .remember { display: inline-flex; align-items: center; gap: var(--space-2); font-size: var(--font-size-sm); color: var(--color-text-secondary); cursor: pointer; user-select: none; }
+    .remember input { width: 16px; height: 16px; accent-color: var(--color-primary); cursor: pointer; }
+    .link { color: var(--color-primary); text-decoration: none; font-size: var(--font-size-sm); font-weight: var(--font-weight-medium); }
+    .link:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+    /* 主按钮 */
+    .btn-primary {
+      width: 100%; height: 48px; display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2);
+      font: inherit; font-size: var(--font-size-base); font-weight: var(--font-weight-medium); cursor: pointer;
+      color: var(--color-primary-fg); background: var(--color-primary); border: none; border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm);
+      transition: background var(--duration-fast) var(--easing-standard), transform var(--duration-fast) var(--easing-standard), box-shadow var(--duration-fast) var(--easing-standard);
+    }
+    .btn-primary:hover { background: var(--color-primary-hover); box-shadow: var(--shadow-md); }
+    .btn-primary:active { transform: translateY(1px); }
+    .btn-primary[disabled] { opacity: 0.7; cursor: progress; }
+    .spinner { width: 18px; height: 18px; border-radius: var(--radius-full); border: 2px solid rgba(255, 255, 255, 0.4); border-top-color: #fff; animation: spin 0.7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .form-foot { margin-top: var(--space-6); text-align: center; color: var(--color-text-secondary); font-size: var(--font-size-sm); }
+
+    /* 入场微动效：错落淡入，仅动 transform/opacity */
+    .reveal { opacity: 0; transform: translateY(8px); animation: rise var(--duration-slow) var(--easing-decelerate) forwards; }
+    .reveal:nth-child(2) { animation-delay: 60ms; }
+    .reveal:nth-child(3) { animation-delay: 120ms; }
+    @keyframes rise { to { opacity: 1; transform: none; } }
+    /* 兜底：开启“减少动态效果”时入场动画被禁用，需强制 .reveal 可见，否则标题/社交区停留在 opacity:0 */
+    @media (prefers-reduced-motion: reduce) {
+      .reveal { opacity: 1 !important; transform: none !important; animation: none !important; }
+    }
+
+    /* ---------- 响应式：≤ 900px 折叠左面板，表单占满 ---------- */
+    @media (max-width: 900px) {
+      .auth { grid-template-columns: 1fr; }
+      .brand-panel { display: none; }
+      .form-panel { padding: var(--space-8) var(--space-5); }
+      .form-brand { display: flex; }
+    }
+    @media (max-width: 420px) {
+      .social { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="auth">
+    <!-- 左：品牌展示面板 -->
+    <aside class="brand-panel">
+      <div class="brand">
+        <span class="mark"><i data-lucide="compass" style="width:22px;height:22px"></i></span>
+        <span class="name">Northwind</span>
+      </div>
+
+      <div class="brand-copy">
+        <h1>欢迎回来，<br />继续你的工作。</h1>
+        <p>把数据、协作与发布收拢进同一个工作区，让团队少切换、多产出。</p>
+
+        <div class="perks">
+          <div class="perk"><span class="tick"><i data-lucide="check" style="width:16px;height:16px"></i></span> 实时同步，多人同时编辑不冲突</div>
+          <div class="perk"><span class="tick"><i data-lucide="check" style="width:16px;height:16px"></i></span> 企业级加密与细粒度权限</div>
+          <div class="perk"><span class="tick"><i data-lucide="check" style="width:16px;height:16px"></i></span> 一处接入，打通你已在用的工具</div>
+        </div>
+      </div>
+
+      <div class="quote">
+        <p>“接入 Northwind 后，我们跨团队的对齐成本降了一半，发布前不再手忙脚乱。”</p>
+        <div class="who">林知微 · Northwind 产品负责人</div>
+      </div>
+    </aside>
+
+    <!-- 右：登录表单 -->
+    <main class="form-panel">
+      <div class="form-card">
+        <div class="form-brand">
+          <span class="mark"><i data-lucide="compass" style="width:18px;height:18px"></i></span>
+          <span class="name" style="font-weight:var(--font-weight-semibold);letter-spacing:var(--letter-spacing-tighter)">Northwind</span>
+        </div>
+
+        <h2 class="reveal">登录</h2>
+        <p class="lead reveal">使用你的账户继续，或选择下方方式快速进入。</p>
+
+        <div class="social reveal">
+          <button class="btn-social" type="button" aria-label="使用 Google 登录">
+            <svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.4 29.3 35 24 35c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.3 6.1 29.4 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.3-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 16.1 19 13 24 13c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.3 6.1 29.4 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 10-2 13.6-5.2l-6.3-5.2C29.2 35.1 26.7 36 24 36c-5.3 0-9.7-2.6-11.3-7l-6.5 5C9.6 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.1-4 5.6l6.3 5.2C39.9 35.6 44 30.3 44 24c0-1.3-.1-2.3-.4-3.5z"/></svg>
+            Google
+          </button>
+          <button class="btn-social" type="button" aria-label="使用 GitHub 登录">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .5C5.7.5.5 5.7.5 12c0 5.1 3.3 9.4 7.9 10.9.6.1.8-.3.8-.6v-2c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.7 1.3 3.4 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.8 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0C17.3 5 18.3 5.3 18.3 5.3c.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.5-2.7 5.5-5.3 5.8.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6 4.6-1.5 7.9-5.8 7.9-10.9C23.5 5.7 18.3.5 12 .5z"/></svg>
+            GitHub
+          </button>
+        </div>
+
+        <div class="divider">或使用邮箱登录</div>
+
+        <form id="loginForm" novalidate>
+          <div class="field" id="f-email">
+            <label for="email">邮箱</label>
+            <div class="control">
+              <i data-lucide="mail" class="lead-icon" style="width:18px;height:18px"></i>
+              <input id="email" name="email" type="email" inputmode="email" autocomplete="email" placeholder="you@company.com" />
+            </div>
+            <span class="msg"><i data-lucide="alert-circle" style="width:14px;height:14px"></i> 请输入有效的邮箱地址</span>
+          </div>
+
+          <div class="field" id="f-pass">
+            <label for="password">密码</label>
+            <div class="control">
+              <i data-lucide="lock" class="lead-icon" style="width:18px;height:18px"></i>
+              <input id="password" name="password" type="password" autocomplete="current-password" placeholder="请输入密码" />
+              <button type="button" class="toggle" id="togglePass" aria-label="显示密码">
+                <i data-lucide="eye" style="width:18px;height:18px"></i>
+              </button>
+            </div>
+            <span class="msg"><i data-lucide="alert-circle" style="width:14px;height:14px"></i> 密码不能为空</span>
+          </div>
+
+          <div class="row-between">
+            <label class="remember"><input type="checkbox" name="remember" /> 记住我</label>
+            <a class="link" href="#">忘记密码？</a>
+          </div>
+
+          <button class="btn-primary" type="submit" id="submitBtn">登录</button>
+        </form>
+
+        <p class="form-foot">还没有账户？<a class="link" href="#">免费注册</a></p>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    lucide.createIcons();
+
+    // 密码显隐切换
+    const toggle = document.getElementById("togglePass");
+    const pass = document.getElementById("password");
+    toggle.addEventListener("click", () => {
+      const show = pass.type === "password";
+      pass.type = show ? "text" : "password";
+      toggle.setAttribute("aria-label", show ? "隐藏密码" : "显示密码");
+      toggle.innerHTML = '<i data-lucide="' + (show ? "eye-off" : "eye") + '" style="width:18px;height:18px"></i>';
+      lucide.createIcons();
+    });
+
+    // 表单校验 + 加载态（纯前端演示）
+    const form = document.getElementById("loginForm");
+    const submitBtn = document.getElementById("submitBtn");
+    const emailField = document.getElementById("f-email");
+    const passField = document.getElementById("f-pass");
+
+    const isEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+
+    function clearError(field) { field.classList.remove("error"); }
+    emailField.querySelector("input").addEventListener("input", () => clearError(emailField));
+    passField.querySelector("input").addEventListener("input", () => clearError(passField));
+
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      let ok = true;
+      if (!isEmail(form.email.value.trim())) { emailField.classList.add("error"); ok = false; }
+      if (!form.password.value) { passField.classList.add("error"); ok = false; }
+      if (!ok) return;
+
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span class="spinner"></span> 登录中…';
+      setTimeout(() => {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "登录";
+        // 真实场景在此跳转；这里仅作演示反馈
+        form.password.value = "";
+      }, 1400);
+    });
+  </script>
+</body>
+</html>

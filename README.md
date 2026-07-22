@@ -1,4 +1,4 @@
-# ai-ui-skill-demo
+# ui-style-craft
 
 一个面向 **CodeBuddy** 的 UI 视觉质量增强技能包 **`ui-style-craft`**：把专业设计体系（design token + 视觉规范 + 反模式禁令）沉淀为可执行资产，让 AI 写/改出来的前端界面一致、可访问、无“AI 味”。
 - 打包产物：`dist/ui-style-craft.zip`
@@ -103,6 +103,10 @@ ai-ui-skill-demo/
 │   │   ├── web-tech.html           # 科技风落地页（暗色 + 渐变标题 + 辉光卡片）
 │   │   ├── web-glass.html          # 玻璃拟态落地页（彩色背景 + 磨砂卡片）
 │   │   ├── mobile-web.html         # 移动端 web（吸顶导航+列表+底部 Tab+安全区）
+│   │   ├── login-split.html         # 登录页·浅色分屏（默认/推荐，响应式到移动端）
+│   │   ├── login-mobile.html        # 登录页·移动端单列（触控友好+安全区）
+│   │   ├── login-glass.html         # 登录页·玻璃拟态（彩色背景+磨砂卡）
+│   │   └── login-dark.html          # 登录页·暗色（深画布+深色玻璃卡）
 │   │   ├── miniprogram/            # 小程序极简卡片（WXML + WXSS，rpx + 安全区 + hover-class；风格无关，可配任意 preset）
 │   │   │   ├── index.wxml
 │   │   │   └── index.wxss
